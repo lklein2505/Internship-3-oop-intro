@@ -8,7 +8,7 @@ namespace EventTracker
     {
         public static void PrintFormattedText (string name, EventType eventType, DateTime start, DateTime end)
         {
-            Console.WriteLine(name + "-" + eventType + "-" + start + "-" + end);
+            Console.WriteLine("\n" + name + " - " + eventType + " - " + start + " - " + end);
         }
     }
 }

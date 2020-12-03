@@ -18,5 +18,25 @@ namespace EventTracker
         public string LastName { get; set; }
         public string Oib { get; set; }
         public string PhoneNumber { get; set; }
+
+        public Person()
+        {
+            PersonInput();
+        }
+
+        public void PersonInput()
+        {
+            Console.WriteLine("\nUnesite ime osobe: ");
+            FirstName = Console.ReadLine();
+
+            Console.WriteLine("\nUnesite prezime osobe: ");
+            LastName = Console.ReadLine();
+
+            Console.WriteLine("\nUnesite OIB osobe");
+            Oib = Console.ReadLine();
+
+            Console.WriteLine("\nUnesite broj mobitela osobe");
+            PhoneNumber = Console.ReadLine();
+        }
     }
 }
