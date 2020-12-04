@@ -29,7 +29,7 @@ namespace EventTracker
 
         public DateTime End { get; set; }
 
-        public List<Person> eventGoers { get; set; }
+        public List<Person> eventGoers { get; set; } = new List<Person>();
 
         public Event()
         {

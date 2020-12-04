@@ -18,35 +18,41 @@ namespace EventTracker
             var aZverev = new Person("Alex", "Zverev", "28433244", "0912632254");
             var bPaire = new Person("Benoit", "Paire", "84747714", "0982256647");
             var nKyrgios = new Person("Nick", "Kyrgios", "48557414", "0911142257");
-            var ivosCoffee = new Event("Coffee with Dr. Ivo", 0, new DateTime(2013, 1, 23, 17, 30, 00), new DateTime(2013, 1, 23, 19, 30, 00));
+            var ivosCoffee = new Event("Coffee with Dr. Ivo", EventType.Coffee, new DateTime(2013, 1, 23, 17, 30, 00), new DateTime(2013, 1, 23, 19, 30, 00));
             var backhandLecture = new Event("Backhand intro", EventType.Lecture, new DateTime(2013, 1, 23, 19, 45, 00), new DateTime(2013, 1, 23, 21, 45, 00));
             var agassiConcert = new Event("Karaoke with Agassi", EventType.Concert, new DateTime(2013, 8, 15, 20, 45, 00), new DateTime(2013, 8, 15, 21, 45, 00));
 
-            var ivosList = new List<Person>() { rNadal, rFederer };
-            var backhandList = new List<Person>() { mCilic, aZverev };
-            var concertList = new List<Person>() { bPaire, nKyrgios };
+            var persons = new List<Person>();
+            persons.Add(rFederer);
+            persons.Add(rNadal);
+            persons.Add(mCilic);
+            persons.Add(aZverev);
+            persons.Add(bPaire);
+            persons.Add(nKyrgios);
 
-            var persons = new List<Person>() { rNadal, rFederer, mCilic, aZverev, bPaire, nKyrgios };
-
-            var events = new List<Event>() { ivosCoffee, backhandLecture, agassiConcert };
+            ivosCoffee.eventGoers.Add(rNadal);
+            ivosCoffee.eventGoers.Add(rFederer);
+            backhandLecture.eventGoers.Add(mCilic);
+            backhandLecture.eventGoers.Add(aZverev);
+            agassiConcert.eventGoers.Add(bPaire);
+            agassiConcert.eventGoers.Add(nKyrgios);
 
             var eventDict = new Dictionary<Event, List<Person>>()
             {
-                {ivosCoffee, ivosList },
-                {backhandLecture, backhandList },
-                {agassiConcert, concertList }
+                {ivosCoffee, ivosCoffee.eventGoers },
+                {backhandLecture, backhandLecture.eventGoers },
+                {agassiConcert, agassiConcert.eventGoers }
             };
-            Console.WriteLine(eventDict);
 
             while (!exit)
             {
-                Console.WriteLine("" +
+                Console.WriteLine("\n" +
                     "1 - Dodaj event\n" +
                     "2 - Brisi event\n" +
                     "3 - Editaj event\n" +
                     "4 - Dodaj osobu na event\n" +
                     "5 - Ukloni osobu s eventa\n" +
-                    "6 - Podmeni za ispis detalja\n" +
+                    "6 - Izbornik za ispis detalja\n" +
                     "0 - Izlaz iz aplikacije\n" +
                     "Odaberite akciju:\n");
 
@@ -54,53 +60,59 @@ namespace EventTracker
                 switch (choosenAction)
                 {
                     case 1:
-                        AddEvent(events, eventDict);
+                        AddEvent(eventDict);
                         break;
                     case 2:
-                        DeleteEvent(events);
+                        DeleteEvent(eventDict);
                         break;
                     case 3:
-                        EditEvent(events);
+                        EditEvent(eventDict);
                         break;
                     case 4:
-                        AddPerson(events, persons, eventDict);
+                        AddPerson(persons, eventDict);
                         break;
                     case 5:
-                        RemovePerson(events, persons, eventDict);
+                        RemovePerson(persons, eventDict);
                         break;
                     case 6:
-                        PrintEvents(events);
+                        Submenu(eventDict);                        
+                        break;
+                    case 0:
+                        exit = true;
+                        break;
+                    default:
+                        Console.WriteLine("Greška! Unijeli ste pogrešan broj. Unesite broj od 0 do 6!");
                         break;
                 }
             }
-            static void AddEvent(List<Event> events, Dictionary<Event, List<Person>> eventDict)
+
+            static void AddEvent(Dictionary<Event, List<Person>> eventDict)
             {
                 var newEvent = new Event();
                 
-                var flag1 = SameNameCheck(newEvent, events);
+                var flag1 = SameNameCheck(newEvent, eventDict);
 
-                var flag2 = TimeOverlapCheck(newEvent, events);
+                var flag2 = TimeOverlapCheck(newEvent, eventDict);
 
                 var flag3 = TimeErrorCheck(newEvent);
                 
                 if (flag1 == false && flag2 == false && flag3 == false)
                 {
-                    events.Add(newEvent);
                     eventDict.Add(newEvent, newEvent.eventGoers);
                 }
             }
 
-            static void DeleteEvent(List<Event> events)
+            static void DeleteEvent(Dictionary<Event, List<Person>> eventDict)
             {
                 Console.WriteLine("Unesite ime eventa kojeg zelite ukloniti: ");
                 var deleteChoice = Console.ReadLine();
 
                 var flag = false;
-                foreach (var Event in events)
+                foreach (var Event in eventDict)
                 {
-                    if (deleteChoice.ToUpper() == Event.Name.ToUpper())
+                    if (deleteChoice.ToUpper() == Event.Key.Name.ToUpper())
                     {
-                        events.Remove(Event);
+                        eventDict.Remove(Event.Key);
                         flag = true;
                         break;
                     }
@@ -109,14 +121,14 @@ namespace EventTracker
                     Console.WriteLine("Event s tim imenom ne postoji!");
             }
 
-            static void EditEvent(List<Event> events)
+            static void EditEvent(Dictionary<Event, List<Person>> eventDict)
             {
                 Console.WriteLine("Unesite ime eventa kojeg biste htjeli urediti: ");
                 var editChoice = Console.ReadLine();
 
-                foreach (var Event in events)
+                foreach (var Event in eventDict)
                 {
-                    if (editChoice.ToUpper() == Event.Name.ToUpper())
+                    if (editChoice.ToUpper() == Event.Key.Name.ToUpper())
                     {
                         var endFlag = false;
                         while (endFlag == false)
@@ -132,9 +144,9 @@ namespace EventTracker
                             {
                                 Console.WriteLine("Unesite novo ime: ");
                                 var newName = Console.ReadLine();
-                                var flag = SameNameCheck(Event, events);
+                                var flag = SameNameCheck(Event.Key, eventDict);
                                 if (flag == false)
-                                    Event.Name = newName;
+                                    Event.Key.Name = newName;
                                 else
                                     break;
                             }
@@ -157,22 +169,22 @@ namespace EventTracker
                                     switch (newType)
                                     {
                                         case "COFFEE":
-                                            Event.TypeOfEvent = EventType.Coffee;
+                                            Event.Key.TypeOfEvent = EventType.Coffee;
                                             flag = true;
                                             break;
 
                                         case "LECTURE":
-                                            Event.TypeOfEvent = EventType.Lecture;
+                                            Event.Key.TypeOfEvent = EventType.Lecture;
                                             flag = true;
                                             break;
 
                                         case "CONCERT":
-                                            Event.TypeOfEvent = EventType.Concert;
+                                            Event.Key.TypeOfEvent = EventType.Concert;
                                             flag = true;
                                             break;
 
                                         case "STUDYSESSION":
-                                            Event.TypeOfEvent = EventType.StudySession;
+                                            Event.Key.TypeOfEvent = EventType.StudySession;
                                             flag = true;
                                             break;
 
@@ -193,7 +205,7 @@ namespace EventTracker
                             {
                                 Console.WriteLine("Unesite novi datum i vrijeme početka: ");
                                 var newStart = DateTime.Parse(Console.ReadLine());                             
-                                Event.Start = newStart;                                
+                                Event.Key.Start = newStart;                                
                             }
 
                             Console.WriteLine("Želite li mijenjati datum i vrijeme zavšetka eventa? (y/n)");
@@ -207,9 +219,9 @@ namespace EventTracker
                             {
                                 Console.WriteLine("Unesite novi datum i vrijeme završetka: ");
                                 var newEnd = DateTime.Parse(Console.ReadLine());
-                                var flag = TimeOverlapCheck(Event, events);
-                                if (flag == false && DateTime.Compare(newEnd, Event.Start) > 0)
-                                    Event.End = newEnd;
+                                var flag = TimeOverlapCheck(Event.Key, eventDict);
+                                if (flag == false && DateTime.Compare(newEnd, Event.Key.Start) > 0)
+                                    Event.Key.End = newEnd;
                                 else
                                 {
                                     Console.WriteLine("Greška pri postavljanju novog datuma!");
@@ -228,15 +240,15 @@ namespace EventTracker
                 }
             }
 
-            static void AddPerson(List<Event> events, List<Person> persons, Dictionary<Event, List<Person>> eventDict)
+            static void AddPerson(List<Person> persons, Dictionary<Event, List<Person>> eventDict)
             {
                 Console.WriteLine("Unesite ime eventa na koji biste htjeli dodati osobu: ");
                 var addOnEvent = Console.ReadLine().ToUpper();
 
                 var flag = false;
-                foreach (var Event in events)
+                foreach (var Event in eventDict)
                 {
-                    if (Event.Name.ToUpper() == addOnEvent)
+                    if (Event.Key.Name.ToUpper() == addOnEvent)
                     {
                         flag = true;
                         break;
@@ -269,15 +281,15 @@ namespace EventTracker
                 }
             }
 
-            static void RemovePerson(List<Event> events, List<Person> persons, Dictionary<Event, List<Person>> eventDict)
+            static void RemovePerson(List<Person> persons, Dictionary<Event, List<Person>> eventDict)
             {
                 Console.WriteLine("\nUnesite ime eventa s kojeg bi htjeli maknuti osobu: ");
                 var removeFromEvent = Console.ReadLine().ToUpper();
 
                 var flag = false;
-                foreach (var Event in events)
+                foreach (var Event in eventDict)
                 {
-                    if (Event.Name.ToUpper() == removeFromEvent)
+                    if (Event.Key.Name.ToUpper() == removeFromEvent)
                     {
                         flag = true;
                         break;
@@ -323,33 +335,60 @@ namespace EventTracker
                 Console.WriteLine("Greška! Osoba nije na eventu!");
             }
 
-            static void PrintEvents(List<Event> events)
+            static string PrintEvents(Dictionary<Event, List<Person>> eventDict)
             {
                 Console.WriteLine("\nUnesite ime eventa čije želite saznati detalje: ");
                 var showEvent = Console.ReadLine().ToUpper();
 
                 var flag = false;
-                foreach (var Event in events)
+                foreach (var Event in eventDict)
                 {                    
-                    if (Event.Name.ToUpper() == showEvent)
+                    if (Event.Key.Name.ToUpper() == showEvent)
                     {
-                        TextHelper.PrintFormattedText(Event.Name, Event.TypeOfEvent, Event.Start, Event.End);
+                        TimeSpan span = Event.Key.End - Event.Key.Start;
+                        EventPrinter.PrintFormattedText(Event.Key.Name, Event.Key.TypeOfEvent, Event.Key.Start, Event.Key.End, span, Event.Value.Count);
                         flag = true;
-                        break;
+                        return showEvent;                        
                     }
                 }
-                if (flag == false)
-                    Console.WriteLine("\nNe postoji event tog imena!");
+                if (flag == false)                
+                    Console.WriteLine("\nNe postoji event tog imena!");           
+                var error = "Greška!";
+                return error;
+            }
+
+            static Event ChooseEvent(Dictionary<Event, List<Person>> eventDict)
+            {
+                Console.WriteLine("\nUnesite ime eventa čije sudionike želite znati: ");                
+
+                while (true)
+                {
+                    var choosenEvent = Console.ReadLine().ToUpper();
+                    foreach (var Event in eventDict)
+                    {
+                        if (Event.Key.Name.ToUpper() == choosenEvent)
+                        {
+                            foreach(var Item in eventDict)
+                            {
+                                if (Item.Key.Name.ToUpper() == choosenEvent)
+                                    return Item.Key;
+                            }
+                        }
+                        else
+                            Console.WriteLine("\nEvent s tim imenom ne postoji!");
+                    }                    
+                }
+                            
             }
 
 
 
-            static bool TimeOverlapCheck(Event newEvent, List<Event> events)
+            static bool TimeOverlapCheck(Event newEvent, Dictionary<Event, List<Person>> eventDict)
             {
-                foreach (var Event in events)
+                foreach (var Event in eventDict)
                 {
-                    if (((DateTime.Compare(newEvent.Start, Event.Start) > 0 && DateTime.Compare(newEvent.Start, Event.End) > 0) || (DateTime.Compare(newEvent.Start, Event.Start) < 0 && DateTime.Compare(newEvent.Start, Event.End) < 0) ||
-                        (DateTime.Compare(newEvent.End, Event.Start) > 0 && DateTime.Compare(newEvent.End, Event.End) > 0) || (DateTime.Compare(newEvent.End, Event.Start) < 0 && DateTime.Compare(newEvent.End, Event.End) < 0)))
+                    if (((DateTime.Compare(newEvent.Start, Event.Key.Start) > 0 && DateTime.Compare(newEvent.Start, Event.Key.End) < 0) || (DateTime.Compare(newEvent.Start, Event.Key.Start) < 0 && DateTime.Compare(newEvent.Start, Event.Key.End) > 0) ||
+                        (DateTime.Compare(newEvent.End, Event.Key.Start) > 0 && DateTime.Compare(newEvent.End, Event.Key.End) < 0) || (DateTime.Compare(newEvent.End, Event.Key.Start) < 0 && DateTime.Compare(newEvent.End, Event.Key.End) > 0)))                    
                     {
                         Console.WriteLine("Vrijeme eventa vec se podudara s vremenom postojeceg eventa!");
                         return true;
@@ -360,7 +399,7 @@ namespace EventTracker
 
             static bool TimeErrorCheck(Event newEvent)
             {
-                if (DateTime.Compare(newEvent.End, newEvent.Start) < 0)
+                if (DateTime.Compare(newEvent.End, newEvent.Start) > 0)
                 {
                     Console.WriteLine("Greška! Vrijeme početka ne može biti nakon vremena završetka eventa!");
                     return true;
@@ -369,18 +408,70 @@ namespace EventTracker
                     return false;
             }
 
-            static bool SameNameCheck(Event newEvent, List<Event> events)
+            static bool SameNameCheck(Event newEvent, Dictionary<Event, List<Person>> eventDict)
             {
-                foreach (var Event in events)
+                foreach (var Event in eventDict)
                 {
-                    if (newEvent.Name.ToUpper() == Event.Name.ToUpper())
+                    if (newEvent.Name.ToUpper() == Event.Key.Name.ToUpper())
                     {
                         Console.WriteLine("Vec postoji event istog imena!");
                         return true;                        
                     }
                 }
                 return false;
+            }  
+            
+            static void PrintPersons(List<Person> persons)
+            {
+                Console.WriteLine("\nSudionici na eventu:");
+                var i = 1;
+                foreach (var Person in persons)
+                {                    
+                    PersonPrinter.PrintFormattedText(i, Person.FirstName, Person.LastName, Person.PhoneNumber);
+                    i++;
+                }
             }            
+            
+            static void Submenu(Dictionary<Event, List<Person>> eventDict)
+            {
+                Console.WriteLine("\n1 - Ispis detelja eventa\n" +
+                    "2 - Ispis svih osoba na eventu\n" +
+                    "3 - Ispis svih detalja\n" +
+                    "4 - Natrag u glavni izbornik\n" +
+                    "Odaberite akciju:");
+
+                var choosenAction = int.Parse(Console.ReadLine());
+                var flag = false;
+                while (flag == false)
+                {
+                    switch (choosenAction)
+                    {
+                        case 1:
+                            PrintEvents(eventDict);                            
+                            break; 
+                        case 2:
+                            var choosenEvent = ChooseEvent(eventDict);
+                            PrintPersons(choosenEvent.eventGoers);
+                            break;
+                        case 3:
+                            var choosenEventAll = PrintEvents(eventDict);
+                            if (choosenEventAll != "Greška!")
+                                foreach (var Event in eventDict)
+                                {
+                                    if (choosenEventAll == Event.Key.Name.ToUpper())
+                                    {
+                                        PrintPersons(Event.Key.eventGoers);
+                                        break;
+                                    }
+                                    break;
+                                }
+                            break;                       
+                        case 4:
+                            flag = true;
+                            break;
+                    }
+                }                
+            }
         }
     }
 }
