@@ -89,7 +89,7 @@ namespace EventTracker
                 {
                     try
                     {
-                        Start = DateTime.Parse(Console.ReadLine());
+                        End = DateTime.Parse(Console.ReadLine());
                         break;
                     }
                     catch

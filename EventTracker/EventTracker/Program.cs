@@ -54,7 +54,7 @@ namespace EventTracker
                     "5 - Ukloni osobu s eventa\n" +
                     "6 - Izbornik za ispis detalja\n" +
                     "0 - Izlaz iz aplikacije\n" +
-                    "Odaberite akciju:\n");
+                    "Odaberite akciju:");
 
                 var choosenAction = int.Parse(Console.ReadLine());
                 switch (choosenAction)
@@ -90,7 +90,7 @@ namespace EventTracker
             {
                 var newEvent = new Event();
                 
-                var flag1 = SameNameCheck(newEvent, eventDict);
+                var flag1 = SameNameCheck(newEvent.Name, eventDict);
 
                 var flag2 = TimeOverlapCheck(newEvent, eventDict);
 
@@ -104,7 +104,7 @@ namespace EventTracker
 
             static void DeleteEvent(Dictionary<Event, List<Person>> eventDict)
             {
-                Console.WriteLine("Unesite ime eventa kojeg zelite ukloniti: ");
+                Console.WriteLine("Unesite ime eventa kojeg želite ukloniti: ");
                 var deleteChoice = Console.ReadLine();
 
                 var flag = false;
@@ -124,12 +124,14 @@ namespace EventTracker
             static void EditEvent(Dictionary<Event, List<Person>> eventDict)
             {
                 Console.WriteLine("Unesite ime eventa kojeg biste htjeli urediti: ");
-                var editChoice = Console.ReadLine();
+                var editChoice = Console.ReadLine().ToUpper();
 
+                var loopFlag = false;
                 foreach (var Event in eventDict)
                 {
-                    if (editChoice.ToUpper() == Event.Key.Name.ToUpper())
+                    if (editChoice == Event.Key.Name.ToUpper())
                     {
+                        loopFlag = true;
                         var endFlag = false;
                         while (endFlag == false)
                         {
@@ -144,7 +146,7 @@ namespace EventTracker
                             {
                                 Console.WriteLine("Unesite novo ime: ");
                                 var newName = Console.ReadLine();
-                                var flag = SameNameCheck(Event.Key, eventDict);
+                                var flag = SameNameCheck(newName, eventDict);
                                 if (flag == false)
                                     Event.Key.Name = newName;
                                 else
@@ -189,7 +191,7 @@ namespace EventTracker
                                             break;
 
                                         default:
-                                            Console.WriteLine("Greska! Unijeli ste pogresan tip eventa!\n");
+                                            Console.WriteLine("Greška! Unijeli ste pogresan tip eventa!\n");
                                             break;
                                     }
                                 }                                
@@ -218,6 +220,7 @@ namespace EventTracker
                             else if (editEnd.ToUpper() == "Y")
                             {
                                 Console.WriteLine("Unesite novi datum i vrijeme završetka: ");
+                                endFlag = true;
                                 var newEnd = DateTime.Parse(Console.ReadLine());
                                 var flag = TimeOverlapCheck(Event.Key, eventDict);
                                 if (flag == false && DateTime.Compare(newEnd, Event.Key.Start) > 0)
@@ -229,15 +232,15 @@ namespace EventTracker
                                 }                                    
                             }
                             else if (editEnd.ToUpper() == "N")
-                                endFlag = true;
+                            {
+                                endFlag = true;                                
+                                break;
+                            }                            
                         }
-                    }
-                    else
-                    {
-                        Console.WriteLine("Greška! Ne postoji event s tim imenom!");
-                        break;
-                    }
+                    }                    
                 }
+                if (loopFlag == false)                
+                    Console.WriteLine("Greška! Ne postoji event s tim imenom!");                  
             }
 
             static void AddPerson(List<Person> persons, Dictionary<Event, List<Person>> eventDict)
@@ -390,7 +393,7 @@ namespace EventTracker
                     if (((DateTime.Compare(newEvent.Start, Event.Key.Start) > 0 && DateTime.Compare(newEvent.Start, Event.Key.End) < 0) || (DateTime.Compare(newEvent.Start, Event.Key.Start) < 0 && DateTime.Compare(newEvent.Start, Event.Key.End) > 0) ||
                         (DateTime.Compare(newEvent.End, Event.Key.Start) > 0 && DateTime.Compare(newEvent.End, Event.Key.End) < 0) || (DateTime.Compare(newEvent.End, Event.Key.Start) < 0 && DateTime.Compare(newEvent.End, Event.Key.End) > 0)))                    
                     {
-                        Console.WriteLine("Vrijeme eventa vec se podudara s vremenom postojeceg eventa!");
+                        Console.WriteLine("Vrijeme eventa već se podudara s vremenom postojećeg eventa!");
                         return true;
                     }                    
                 }
@@ -399,7 +402,7 @@ namespace EventTracker
 
             static bool TimeErrorCheck(Event newEvent)
             {
-                if (DateTime.Compare(newEvent.End, newEvent.Start) > 0)
+                if (DateTime.Compare(newEvent.End, newEvent.Start) < 0)
                 {
                     Console.WriteLine("Greška! Vrijeme početka ne može biti nakon vremena završetka eventa!");
                     return true;
@@ -408,13 +411,13 @@ namespace EventTracker
                     return false;
             }
 
-            static bool SameNameCheck(Event newEvent, Dictionary<Event, List<Person>> eventDict)
+            static bool SameNameCheck(string newName, Dictionary<Event, List<Person>> eventDict)
             {
                 foreach (var Event in eventDict)
                 {
-                    if (newEvent.Name.ToUpper() == Event.Key.Name.ToUpper())
+                    if (newName.ToUpper() == Event.Key.Name.ToUpper())
                     {
-                        Console.WriteLine("Vec postoji event istog imena!");
+                        Console.WriteLine("Već postoji event istog imena!");
                         return true;                        
                     }
                 }
@@ -433,17 +436,17 @@ namespace EventTracker
             }            
             
             static void Submenu(Dictionary<Event, List<Person>> eventDict)
-            {
-                Console.WriteLine("\n1 - Ispis detelja eventa\n" +
+            {                
+                var flag = false;
+                while (flag == false)
+                {
+                    Console.WriteLine("\n1 - Ispis detelja eventa\n" +
                     "2 - Ispis svih osoba na eventu\n" +
                     "3 - Ispis svih detalja\n" +
                     "4 - Natrag u glavni izbornik\n" +
                     "Odaberite akciju:");
 
-                var choosenAction = int.Parse(Console.ReadLine());
-                var flag = false;
-                while (flag == false)
-                {
+                    var choosenAction = int.Parse(Console.ReadLine());
                     switch (choosenAction)
                     {
                         case 1:
@@ -463,11 +466,13 @@ namespace EventTracker
                                         PrintPersons(Event.Key.eventGoers);
                                         break;
                                     }
-                                    break;
                                 }
                             break;                       
                         case 4:
                             flag = true;
+                            break;
+                        default:
+                            Console.WriteLine("Greška! Unijeli ste pogrešan broj. Unesite broj od 1 do 4!\n");
                             break;
                     }
                 }                
